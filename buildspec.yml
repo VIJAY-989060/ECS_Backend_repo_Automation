@@ -1,31 +1,32 @@
 version: 0.2
+
 env:
   variables:
     AWS_ACCOUNT_ID: "503561455231"
     AWS_REGION: "us-east-1"
-    ECR_REPO_NAME: "backend-repo" # Update this to your actual Backend ECR name
-    ECS_SERVICE_NAME: "backend_TD-service-su9hcjvb" # Update this to your actual Backend ECS Service name
-    ECS_CLUSTER_NAME: "ECS-Test-App_deployment_cluster" 
+    ECR_REPO_NAME: "backend-repo"
+    ECS_SERVICE_NAME: "backend_TD-service-su9hcjvb"
+    ECS_CLUSTER_NAME: "ECS-Test-App_deployment_cluster"
 
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:$IMAGE_TAG
+      - "aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+      - "IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)"
+      - "IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:$IMAGE_TAG"
 
   build:
     commands:
-      - echo Building Backend Docker image...
+      # Maine yahan se colon (:) hata diya hai taaki YAML error ka chance hi khatam ho jaye
+      - echo Building Docker image for $ECR_REPO_NAME...
       - docker build -t $IMAGE_URI .
 
   post_build:
     commands:
       - echo Pushing image to ECR...
       - docker push $IMAGE_URI
-      
-      # CRITICAL: Deployment Artifact, using your actual backend container name: "backend"
+      - echo Creating imagedefinitions.json artifact...
       - printf '[{"name":"backend","imageUri":"%s"}]' $IMAGE_URI > imagedefinitions.json
 
 artifacts:
