@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 
 app.get("/api", (req, res) => {
-  res.json({ message: "Hello from Backend!" });
+  res.json({ message: "Hello from Backend Successfull!" });
 });
 
 app.listen(8080, () => {
